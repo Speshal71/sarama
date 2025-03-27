@@ -498,6 +498,20 @@ type Config struct {
 	// prior to starting Sarama.
 	// See Examples on how to use the metrics registry
 	MetricRegistry metrics.Registry
+
+	Custom struct {
+		OnNewBrokerResponseReceiver   func()
+		OnCloseBrokerResponseReceiver func()
+
+		OnNewBrokerProducerRun   func()
+		OnCloseBrokerProducerRun func()
+
+		OnNewBrokerProducerFunc1   func()
+		OnCloseBrokerProducerFunc1 func()
+
+		OnNewBrokerProducerFunc2   func()
+		OnCloseBrokerProducerFunc2 func()
+	}
 }
 
 // NewConfig returns a new configuration instance with sane defaults.

@@ -1155,6 +1155,12 @@ func (b *Broker) encode(pe packetEncoder, version int16) (err error) {
 }
 
 func (b *Broker) responseReceiver() {
+	if b.conf.Custom.OnNewBrokerResponseReceiver != nil &&
+		b.conf.Custom.OnCloseBrokerResponseReceiver != nil {
+		b.conf.Custom.OnNewBrokerResponseReceiver()
+		defer b.conf.Custom.OnCloseBrokerResponseReceiver()
+	}
+
 	var dead error
 
 	for response := range b.responses {

@@ -788,10 +788,24 @@ func (p *asyncProducer) newBrokerProducer(broker *Broker) *brokerProducer {
 		buffer:         newProduceSet(p),
 		currentRetries: make(map[string]map[int32]error),
 	}
-	go withRecover(bp.run)
+	go withRecover(func() {
+		if p.conf.Custom.OnNewBrokerProducerRun != nil &&
+			p.conf.Custom.OnCloseBrokerProducerRun != nil {
+			p.conf.Custom.OnNewBrokerProducerRun()
+			defer p.conf.Custom.OnCloseBrokerProducerRun()
+		}
+
+		bp.run()
+	})
 
 	// minimal bridge to make the network response `select`able
 	go withRecover(func() {
+		if p.conf.Custom.OnNewBrokerProducerFunc1 != nil &&
+			p.conf.Custom.OnCloseBrokerProducerFunc1 != nil {
+			p.conf.Custom.OnNewBrokerProducerFunc1()
+			defer p.conf.Custom.OnCloseBrokerProducerFunc1()
+		}
+
 		// Use a wait group to know if we still have in flight requests
 		var wg sync.WaitGroup
 
@@ -848,6 +862,12 @@ func (p *asyncProducer) newBrokerProducer(broker *Broker) *brokerProducer {
 	// This is because the AsyncProduce callback inside the bridge is invoked from the broker
 	// responseReceiver goroutine and closing the broker requires such goroutine to be finished
 	go withRecover(func() {
+		if p.conf.Custom.OnNewBrokerProducerFunc2 != nil &&
+			p.conf.Custom.OnCloseBrokerProducerFunc2 != nil {
+			p.conf.Custom.OnNewBrokerProducerFunc2()
+			defer p.conf.Custom.OnCloseBrokerProducerFunc2()
+		}
+
 		buf := queue.New()
 		for {
 			if buf.Length() == 0 {
